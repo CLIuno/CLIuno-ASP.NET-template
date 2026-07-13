@@ -1,25 +1,55 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using BackendASPNET.Data;
+using BackendASPNET.Support;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+var port = Environment.GetEnvironmentVariable("PORT") ?? "3000";
+builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+var dbFile = Environment.GetEnvironmentVariable("DB_FILE") ?? "db.sqlite";
+builder.Services.AddDbContext<AppDb>(options => options.UseSqlite($"Data Source={dbFile}"));
+builder.Services.AddSingleton<JwtService>();
+builder.Services.AddSingleton<AuthSupport>();
+builder.Services.AddCors();
+
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    // The shared CLIuno contract serialises entity fields as snake_case;
+    // envelope keys are dictionary keys and stay exactly as written.
+    options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower;
+    options.JsonSerializerOptions.DictionaryKeyPolicy = null;
+    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+});
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+using (var scope = app.Services.CreateScope())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    scope.ServiceProvider.GetRequiredService<AppDb>().Database.EnsureCreated();
 }
 
-app.UseHttpsRedirection();
+app.UseCors(policy => policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
 
-app.UseAuthorization();
+// Turn ApiException into the shared error envelope
+app.Use(async (context, next) =>
+{
+    try
+    {
+        await next();
+    }
+    catch (ApiException e)
+    {
+        context.Response.StatusCode = e.Status;
+        context.Response.ContentType = "application/json";
+        await context.Response.WriteAsJsonAsync(
+            new Dictionary<string, object?> { ["status"] = "error", ["message"] = e.Message });
+    }
+});
 
 app.MapControllers();
+app.MapGet("/", () => new { status = "success", message = "CLIuno ASP.NET API" });
 
 app.Run();
