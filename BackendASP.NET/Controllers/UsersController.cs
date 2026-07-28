@@ -114,5 +114,9 @@ public class UsersController(AppDb db, AuthSupport auth) : ControllerBase
         {
             user.Phone = phone;
         }
+        if (body.GetValueOrDefault("avatar_url") is { } avatarUrl)
+        {
+            user.AvatarUrl = avatarUrl;
+        }
     }
 }

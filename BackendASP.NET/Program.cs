@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 using BackendASPNET.Data;
 using BackendASPNET.Support;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,6 +48,13 @@ app.Use(async (context, next) =>
         await context.Response.WriteAsJsonAsync(
             new Dictionary<string, object?> { ["status"] = "error", ["message"] = e.Message });
     }
+});
+
+// Uploaded images are public and unversioned — no /api/v1 prefix, no auth.
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(BackendASPNET.Controllers.UploadsController.EnsureUploadDir()),
+    RequestPath = "/uploads",
 });
 
 app.MapControllers();

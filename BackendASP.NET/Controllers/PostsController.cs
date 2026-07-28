@@ -46,7 +46,14 @@ public class PostsController(AppDb db, AuthSupport auth) : ControllerBase
             throw new ApiException(400, "Title and Content are required");
         }
 
-        var post = new Post { Title = title, Content = content, User = user };
+        // frontends may send either casing; image_url is what goes back out
+        var post = new Post
+        {
+            Title = title,
+            Content = content,
+            ImageUrl = body.GetValueOrDefault("image_url") ?? body.GetValueOrDefault("imageUrl"),
+            User = user,
+        };
         db.Posts.Add(post);
         await db.SaveChangesAsync();
         return Api.Created("Post created successfully", Api.Data("post", post));
@@ -72,7 +79,7 @@ public class PostsController(AppDb db, AuthSupport auth) : ControllerBase
         {
             post.Content = content;
         }
-        if (body.GetValueOrDefault("imageUrl") is { } imageUrl)
+        if ((body.GetValueOrDefault("image_url") ?? body.GetValueOrDefault("imageUrl")) is { } imageUrl)
         {
             post.ImageUrl = imageUrl;
         }

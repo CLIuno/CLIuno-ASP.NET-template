@@ -76,3 +76,7 @@ _[Ss]cripts
 # local sqlite databases
 *.sqlite
 .vs/
+
+# uploaded images — ** so the rule reaches BackendASP.NET/uploads/, not just the root
+**/uploads/*
+!**/uploads/.gitkeep

@@ -22,6 +22,7 @@ public class User
     public string LastName { get; set; } = "";
     public string Email { get; set; } = "";
     public string? Phone { get; set; }
+    public string? AvatarUrl { get; set; }
 
     [JsonIgnore]
     public string Password { get; set; } = "";
@@ -78,7 +79,7 @@ public class Post
     public string Title { get; set; } = "";
     public string Content { get; set; } = "";
 
-    [JsonPropertyName("imageUrl")]
+    [JsonPropertyName("image_url")]
     public string? ImageUrl { get; set; }
 
     public bool IsPaid { get; set; }
