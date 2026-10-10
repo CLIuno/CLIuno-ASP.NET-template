@@ -41,13 +41,15 @@ Conventional commits; `.vs/` and `*.sqlite` are gitignored.
 
 ## AI agents (Claude Code and friends)
 
-- **Check the CLIuno skills first**: `npx cliuno@latest skills status` — if any is
-  `missing`/`outdated`, run `npx cliuno@latest skills install` (adds `.claude/skills/cliuno-*`:
+These commands need **cliuno 2.2 or newer** (`npx cliuno@^2.2` fetches it).
+
+- **Check the CLIuno skills first**: `npx cliuno@^2.2 skills status` — if any is
+  `missing`/`outdated`, run `npx cliuno@^2.2 skills install` (adds `.claude/skills/cliuno-*`:
   the generator workflow, the scaffold guide, and the shared REST contract).
 - **Generate resources, don't hand-write them**:
-  `npx cliuno@latest make:resource Product --fields name:string,price:number,inStock:boolean`
+  `npx cliuno@^2.2 make:resource Product --fields name:string,price:number,inStock:boolean`
   creates `BackendASP.NET/Data/Product.cs`, `BackendASP.NET/Controllers/ProductsController.cs` and registers it in `BackendASP.NET/Data/Models.cs`, following this
   template's conventions and the `{status, message, data}` contract. `--dry-run` previews,
   re-running never duplicates registrations, `--force` overwrites.
-- Single pieces: `make:model`, `make:controller`. `npx cliuno@latest make` lists them.
+- Single pieces: `make:model`, `make:controller`. `npx cliuno@^2.2 make` lists them.
 - Then edit fields/business logic only, and run the gates above.
